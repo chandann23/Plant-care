@@ -25,17 +25,22 @@ enum NotificationStatus {
 }
 
 model User {
+  // ========== AUTHENTICATION FIELDS START ==========
   id                      String             @id @default(cuid())
   email                   String             @unique
-  password                String
+  password                String             // Hashed password for authentication
   name                    String?
   createdAt               DateTime           @default(now())
   updatedAt               DateTime           @updatedAt
-  resetToken              String?
-  resetTokenExpiry        DateTime?
-  fcmToken                String?
+  resetToken              String?            // Token for password reset
+  resetTokenExpiry        DateTime?          // Expiry time for reset token
+  // ========== AUTHENTICATION FIELDS END ==========
+  
+  // Notification settings
+  fcmToken                String?            // Firebase Cloud Messaging token for push notifications
   notificationPreferences Json?              // { pushEnabled, emailEnabled, preferredTime, dailyDigest }
   
+  // Relations
   plants                  Plant[]
   notificationLogs        NotificationLog[]
   
