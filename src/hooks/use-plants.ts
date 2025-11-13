@@ -152,29 +152,8 @@ export function useDeletePlant() {
       }
       return response.json();
     },
-    // Optimistic update
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ["plants"] });
-
-      const previousPlants = queryClient.getQueryData<PlantsResponse>(["plants", {}]);
-
-      // Optimistically remove from list
-      if (previousPlants) {
-        queryClient.setQueryData<PlantsResponse>(["plants", {}], {
-          ...previousPlants,
-          plants: previousPlants.plants.filter(p => p.id !== id),
-        });
-      }
-
-      return { previousPlants };
-    },
-    onError: (_err, _id, context) => {
-      // Rollback on error
-      if (context?.previousPlants) {
-        queryClient.setQueryData(["plants", {}], context.previousPlants);
-      }
-    },
-    onSettled: () => {
+    onSuccess: () => {
+      // Invalidate all plants queries to refetch fresh data
       queryClient.invalidateQueries({ queryKey: ["plants"] });
     },
   });

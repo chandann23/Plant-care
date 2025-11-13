@@ -66,8 +66,8 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Add cache headers for GET requests
-    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    // Disable cache to ensure fresh data after deletions
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
     
     return response;
   } catch (error) {
