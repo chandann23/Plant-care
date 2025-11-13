@@ -1,70 +1,41 @@
 // Firebase Cloud Messaging Service Worker
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
 
-// Try to import Firebase scripts
-try {
-  importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-  importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+// Initialize Firebase
+firebase.initializeApp({
+  apiKey: 'AIzaSyCYydkEIo-TPoEjeuHdDoBWQNhDEnP51RA',
+  authDomain: 'plant-care-a5d3e.firebaseapp.com',
+  projectId: 'plant-care-a5d3e',
+  storageBucket: 'plant-care-a5d3e.firebasestorage.app',
+  messagingSenderId: '305509589045',
+  appId: '1:305509589045:web:62eac32c90cb2cdd4a117c',
+});
 
-  // Initialize Firebase in the service worker
-  firebase.initializeApp({
-    apiKey: 'AIzaSyCYydkEIo-TPoEjeuHdDoBWQNhDEnP51RA',
-    authDomain: 'plant-care-a5d3e.firebaseapp.com',
-    projectId: 'plant-care-a5d3e',
-    storageBucket: 'plant-care-a5d3e.firebasestorage.app',
-    messagingSenderId: '305509589045',
-    appId: '1:305509589045:web:62eac32c90cb2cdd4a117c',
-  });
-
-  const messaging = firebase.messaging();
-} catch (error) {
-  console.error('Error loading Firebase in service worker:', error);
-}
+var messaging = firebase.messaging();
 
 // Handle background messages
-if (typeof messaging !== 'undefined') {
-  messaging.onBackgroundMessage((payload) => {
-    console.log('Received background message:', payload);
+messaging.onBackgroundMessage(function(payload) {
+  console.log('[firebase-messaging-sw.js] Received background message ', payload);
+  
+  var notificationTitle = 'Plant Care Reminder';
+  var notificationOptions = {
+    body: 'You have a plant care task',
+    icon: '/icon-192x192.png',
+  };
 
-    const notificationTitle = payload.notification?.title || 'Plant Care Reminder';
-    const notificationOptions = {
-      body: payload.notification?.body || 'You have a plant care task',
-      icon: payload.notification?.icon || '/icon-192x192.png',
-      badge: '/badge-72x72.png',
-      tag: payload.data?.scheduleId || 'plant-care',
-      data: {
-        url: payload.data?.url || '/tasks',
-        scheduleId: payload.data?.scheduleId,
-        plantId: payload.data?.plantId,
-      },
-      requireInteraction: false,
-      vibrate: [200, 100, 200],
-    };
+  if (payload.notification) {
+    notificationTitle = payload.notification.title || notificationTitle;
+    notificationOptions.body = payload.notification.body || notificationOptions.body;
+  }
 
-    return self.registration.showNotification(notificationTitle, notificationOptions);
-  });
-}
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
 
 // Handle notification clicks
-self.addEventListener('notificationclick', (event) => {
-  console.log('Notification clicked:', event);
-  
+self.addEventListener('notificationclick', function(event) {
   event.notification.close();
-
-  const urlToOpen = event.notification.data?.url || '/tasks';
-
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Check if there's already a window open
-      for (const client of clientList) {
-        if (client.url.includes(urlToOpen) && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      
-      // Open a new window if none exists
-      if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
-      }
-    })
+    clients.openWindow('http://localhost:3000/tasks')
   );
 });

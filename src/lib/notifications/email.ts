@@ -85,7 +85,7 @@ export async function sendEmailNotification(
 
     const { data, error } = await resend.emails.send({
       from: 'Plant Care Reminder <onboarding@resend.dev>',
-      to: 'chandanbasavaraj88@gmail.com', // Resend testing limitation - can only send to verified email
+      to,
       subject,
       html,
     });
